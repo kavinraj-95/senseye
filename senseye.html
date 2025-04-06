@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SensEye | Real-time Emotion Analysis</title>
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3a0ca3;
+            --success: #4cc9f0;
+            --warning: #f72585;
+            --info: #7209b7;
+            --light: #f8f9fa;
+            --dark: #212529;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #121212;
+            color: white;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--secondary), var(--primary));
+            padding: 1rem 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(to right, #f72585, #4cc9f0);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+        }
+
+        .logo-icon {
+            margin-right: 10px;
+            font-size: 1.8rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: var(--success);
+        }
+
+        .hero {
+            height: 50vh;
+            display: flex;
+            align-items: center;
+            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('/api/placeholder/1200/600') center/cover;
+            border-radius: 10px;
+            margin: 2rem 0;
+            padding: 2rem;
+        }
+
+        .hero-content {
+            max-width: 600px;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(to right, #f72585, #4cc9f0);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            color: #f8f9fa;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 0.8rem 1.5rem;
+            background: linear-gradient(135deg, var(--warning), var(--info));
+            color: white;
+            border-radius: 50px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: transform 0.3s, box-shadow 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            transition: transform 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--success);
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 0.5rem;
+        }
+
+        .video-feed {
+            width: 100%;
+            height: 300px;
+            background-color: #1e1e1e;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .start-camera {
+            position: absolute;
+        }
+
+        #video-stream {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none;
+        }
+
+        .emotion-results {
+            margin-top: 1rem;
+        }
+
+        .emotion-bar {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.8rem;
+        }
+
+        .emotion-label {
+            width: 100px;
+            font-weight: 500;
+        }
+
+        .progress-container {
+            flex: 1;
+            height: 10px;
+            background-color: #2d2d2d;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            border-radius: 5px;
+        }
+
+        .joy-bar {
+            background-color: #4cc9f0;
+            width: 25%;
+        }
+
+        .sorrow-bar {
+            background-color: #3a0ca3;
+            width: 15%;
+        }
+
+        .anger-bar {
+            background-color: #f72585;
+            width: 10%;
+        }
+
+        .surprise-bar {
+            background-color: #7209b7;
+            width: 50%;
+        }
+
+        .percentage {
+            margin-left: 1rem;
+            font-weight: 600;
+        }
+
+        .audio-analysis {
+            margin-top: 1rem;
+        }
+
+        .audio-wave {
+            width: 100%;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .audio-bar {
+            width: 5px;
+            height: 60%;
+            background-color: var(--primary);
+            border-radius: 2px;
+            animation: audio-wave 1.5s ease-in-out infinite;
+        }
+
+        @keyframes audio-wave {
+            0%, 100% {
+                height: 20%;
+            }
+            50% {
+                height: 80%;
+            }
+        }
+
+        .audio-bar:nth-child(1) { animation-delay: 0.0s; }
+        .audio-bar:nth-child(2) { animation-delay: 0.1s; }
+        .audio-bar:nth-child(3) { animation-delay: 0.2s; }
+        .audio-bar:nth-child(4) { animation-delay: 0.3s; }
+        .audio-bar:nth-child(5) { animation-delay: 0.4s; }
+        .audio-bar:nth-child(6) { animation-delay: 0.5s; }
+        .audio-bar:nth-child(7) { animation-delay: 0.6s; }
+        .audio-bar:nth-child(8) { animation-delay: 0.7s; }
+
+        .response-section {
+            grid-column: 1 / -1;
+            background: linear-gradient(to right, rgba(74, 97, 238, 0.1), rgba(114, 9, 183, 0.1));
+            padding: 1.5rem;
+            border-radius: 10px;
+            border-left: 5px solid var(--primary);
+        }
+
+        .response-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .response-header i {
+            font-size: 1.5rem;
+            margin-right: 1rem;
+            color: var(--success);
+        }
+
+        .response-text {
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .history-table th, .history-table td {
+            padding: 0.8rem;
+            text-align: left;
+            border-bottom: 1px solid #333;
+        }
+
+        .history-table th {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: var(--success);
+        }
+
+        .emotion-tag {
+            display: inline-block;
+            padding: 0.2rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .joy {
+            background-color: rgba(76, 201, 240, 0.2);
+            color: #4cc9f0;
+        }
+
+        .sorrow {
+            background-color: rgba(58, 12, 163, 0.2);
+            color: #3a0ca3;
+        }
+
+        .anger {
+            background-color: rgba(247, 37, 133, 0.2);
+            color: #f72585;
+        }
+
+        .surprise {
+            background-color: rgba(114, 9, 183, 0.2);
+            color: #7209b7;
+        }
+
+        footer {
+            background-color: #1a1a1a;
+            padding: 2rem 0;
+            margin-top: 3rem;
+            text-align: center;
+            border-top: 1px solid #333;
+        }
+
+        .footer-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .footer-links a {
+            color: #f8f9fa;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer-links a:hover {
+            color: var(--success);
+        }
+
+        .copyright {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .connection-status {
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            background-color: #333;
+            margin-left: 10px;
+        }
+
+        .connection-status.connected {
+            background-color: #28a745;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .nav-links {
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <nav class="navbar">
+                <div class="logo">
+                    <span class="logo-icon">👁️</span>
+                    SensEye
+                    <span id="connection-status" class="connection-status">Disconnected</span>
+                </div>
+                <div class="nav-links">
+                    <a href="#dashboard">Dashboard</a>
+                    <a href="#history">History</a>
+                    <a href="#about">About</a>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="hero">
+            <div class="hero-content">
+                <h1>Real-time Emotion Analysis</h1>
+                <p>Detect and analyze emotions through facial expressions and voice patterns with our advanced AI system.</p>
+                <button class="btn start-analysis">Start Analysis</button>
+            </div>
+        </section>
+
+        <section class="dashboard" id="dashboard">
+            <div class="card">
+                <h2>Video Analysis</h2>
+                <div class="video-feed">
+                    <button class="btn start-camera">Start Camera</button>
+                    <video id="video-stream" autoplay></video>
+                </div>
+                <div class="emotion-results">
+                    <div class="emotion-bar">
+                        <span class="emotion-label">Joy</span>
+                        <div class="progress-container">
+                            <div class="progress-bar joy-bar"></div>
+                        </div>
+                        <span class="percentage">25%</span>
+                    </div>
+                    <div class="emotion-bar">
+                        <span class="emotion-label">Sorrow</span>
+                        <div class="progress-container">
+                            <div class="progress-bar sorrow-bar"></div>
+                        </div>
+                        <span class="percentage">15%</span>
+                    </div>
+                    <div class="emotion-bar">
+                        <span class="emotion-label">Anger</span>
+                        <div class="progress-container">
+                            <div class="progress-bar anger-bar"></div>
+                        </div>
+                        <span class="percentage">10%</span>
+                    </div>
+                    <div class="emotion-bar">
+                        <span class="emotion-label">Surprise</span>
+                        <div class="progress-container">
+                            <div class="progress-bar surprise-bar"></div>
+                        </div>
+                        <span class="percentage">50%</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Voice Analysis</h2>
+                <div class="audio-analysis">
+                    <div class="audio-wave">
+                        <div class="audio-bar"></div>
+                        <div class="audio-bar"></div>
+                        <div class="audio-bar"></div>
+                        <div class="audio-bar"></div>
+                        <div class="audio-bar"></div>
+                        <div class="audio-bar"></div>
+                        <div class="audio-bar"></div>
+                        <div class="audio-bar"></div>
+                    </div>
+                    <button class="btn" id="start-voice">Start Voice Analysis</button>
+                    <div class="emotion-results">
+                        <div class="emotion-bar">
+                            <span class="emotion-label">Joy</span>
+                            <div class="progress-container">
+                                <div class="progress-bar joy-bar" style="width: 30%"></div>
+                            </div>
+                            <span class="percentage">30%</span>
+                        </div>
+                        <div class="emotion-bar">
+                            <span class="emotion-label">Sorrow</span>
+                            <div class="progress-container">
+                                <div class="progress-bar sorrow-bar" style="width: 25%"></div>
+                            </div>
+                            <span class="percentage">25%</span>
+                        </div>
+                        <div class="emotion-bar">
+                            <span class="emotion-label">Anger</span>
+                            <div class="progress-container">
+                                <div class="progress-bar anger-bar" style="width: 5%"></div>
+                            </div>
+                            <span class="percentage">5%</span>
+                        </div>
+                        <div class="emotion-bar">
+                            <span class="emotion-label">Surprise</span>
+                            <div class="progress-container">
+                                <div class="progress-bar surprise-bar" style="width: 40%"></div>
+                            </div>
+                            <span class="percentage">40%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="response-section">
+                <div class="response-header">
+                    <i>💡</i>
+                    <h2>AI Response</h2>
+                </div>
+                <p class="response-text" id="ai-response">You seem surprised! It looks like something unexpected has caught your attention. Would you like to share what's surprising you? Sometimes unexpected things lead to exciting discoveries!</p>
+            </div>
+        </section>
+
+        <section class="card" id="history">
+            <h2>Emotion History</h2>
+            <table class="history-table">
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Primary Emotion</th>
+                        <th>Secondary Emotion</th>
+                        <th>AI Response</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>10:32 AM</td>
+                        <td><span class="emotion-tag surprise">Surprise</span></td>
+                        <td><span class="emotion-tag joy">Joy</span></td>
+                        <td>You seem pleasantly surprised! What unexpected joy did you encounter?</td>
+                    </tr>
+                    <tr>
+                        <td>10:28 AM</td>
+                        <td><span class="emotion-tag joy">Joy</span></td>
+                        <td><span class="emotion-tag surprise">Surprise</span></td>
+                        <td>Your happiness is contagious! Keep that positive energy flowing.</td>
+                    </tr>
+                    <tr>
+                        <td>10:15 AM</td>
+                        <td><span class="emotion-tag sorrow">Sorrow</span></td>
+                        <td><span class="emotion-tag anger">Anger</span></td>
+                        <td>I notice you're feeling down. Remember that difficult moments pass, and it's okay to take time for yourself.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-links">
+                    <a href="#dashboard">Dashboard</a>
+                    <a href="#history">History</a>
+                    <a href="#about">About</a>
+                    <a href="#">Privacy</a>
+                </div>
+                <p class="copyright">© 2025 SensEye. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Configuration
+        const BACKEND_URL = 'http://localhost:5000'; // Change to your actual backend URL/port
+
+        // Socket connection for real-time updates
+        let socket = null;
+
+        // Function to initialize WebSocket connection to backend
+        function initializeSocketConnection() {
+            try {
+                socket = new WebSocket(`ws://localhost:8765`); // Replace with your actual WebSocket URL
+
+                socket.onopen = () => {
+                    console.log('WebSocket connection established');
+                    document.getElementById('connection-status').textContent = 'Connected';
+                    document.getElementById('connection-status').classList.add('connected');
+                };
+
+                socket.onmessage = (event) => {
+                    const data = JSON.parse(event.data);
+                    if (data.type === 'emotion_update') {
+                        updateEmotionUI(data.emotions);
+                    } else if (data.type === 'voice_emotion') {
+                        updateVoiceEmotionUI(data.emotions);
+                    } else if (data.type === 'gemini_response') {
+                        updateAIResponse(data.response);
+                    }
+                };
+
+                socket.onclose = () => {
+                    console.log('WebSocket connection closed');
+                    document.getElementById('connection-status').textContent = 'Disconnected';
+                    document.getElementById('connection-status').classList.remove('connected');
+                    // Try to reconnect after a delay
+                    setTimeout(initializeSocketConnection, 5000);
+                };
+
+                socket.onerror = (error) => {
+                    console.error('WebSocket error:', error);
+                };
+            } catch (error) {
+                console.error('Failed to establish WebSocket connection:', error);
+            }
+        }
+
+        // Start camera and connect to backend video analysis
+        async function startVideoAnalysis() {
+            try {
+                // Get video stream
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                const videoElement = document.getElementById('video-stream');
+                videoElement.srcObject = stream;
+                videoElement.style.display = 'block';
+                document.querySelector('.start-camera').style.display = 'none';
+
+                // Here, we would send video frames to our backend for processing
+                // For demonstration, we'll use a simulated approach
+
+                // Simulate sending snapshots
+                setInterval(() => {
+                    if (socket && socket.readyState === WebSocket.OPEN) {
+                        // Create a canvas to capture the current video frame
+                        const canvas = document.createElement('canvas');
+                        canvas.width = videoElement.videoWidth;
+                        canvas.height = videoElement.videoHeight;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(videoElement, 0, 0);
+
+                        // Convert to base64 for sending via WebSocket
+                        const imageData = canvas.toDataURL('image/jpeg', 0.7);
+
+                        // Send to backend
+                        socket.send(JSON.stringify({
+                            type: 'video_frame',
+                            data: imageData
+                        }));
+                    }
+                }, 2000); // Send every 2 seconds
+
+            } catch (error) {
+                console.error('Error starting video analysis:', error);
+                alert('Could not access your camera. Please check permissions.');
+            }
+        }
+
+        // Start voice analysis
+        function startVoiceAnalysis() {
+            const startButton = document.getElementById('start-voice');
+            startButton.textContent = 'Listening...';
+            startButton.disabled = true;
+
+            // Make API call to backend to start voice recording
+            fetch(`${BACKEND_URL}/start_voice_analysis`, {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Voice analysis started:', data);
+            })
+            .catch(error => {
+                console.error('Error starting voice analysis:', error);
+            })
+            .finally(() => {
+                // Reset button after some time
+                setTimeout(() => {
+                    startButton.textContent = 'Start Voice Analysis';
+                    startButton.disabled = false;
+                }, 5000);
+            });
+        }
+
+        // Update the UI with emotion data received from backend
+        function updateEmotionUI(emotions) {
+            if (!emotions || emotions.length === 0) return;
+
+            // Get the first face's emotions
+            const emotion = emotions[0];
+
+            // Update progress bars
+            const emotionBars = document.querySelectorAll('.video-feed + .emotion-results .progress-bar');
+            const percentages = document.querySelectorAll('.video-feed + .emotion-results .percentage');
+
+            // Convert likelihood values (0-5) to percentages
+            // LIKELIHOOD_MAP = { 0: "UNKNOWN", 1: "VERY_UNLIKELY", 2: "UNLIKELY", 3: "POSSIBLE", 4: "LIKELY", 5: "VERY_LIKELY" }
+            const joyPercent = (emotion.joy / 5) * 100;
+            const sorrowPercent = (emotion.sorrow / 5) * 100;
+            const angerPercent = (emotion.anger / 5) * 100;
+            const surprisePercent = (emotion.surprise / 5) * 100;
+
+            // Update UI
+            emotionBars[0].style.width = `${joyPercent}%`;
+            emotionBars[1].style.width = `${sorrowPercent}%`;
+            emotionBars[2].style.width = `${angerPercent}%`;
+            emotionBars[3].style.width = `${surprisePercent}%`;
+
+            percentages[0].textContent = `${Math.round(joyPercent)}%`;
+            percentages[1].textContent = `${Math.round(sorrowPercent)}%`;
+            percentages[2].textContent = `${Math.round(angerPercent)}%`;
+            percentages[3].textContent = `${Math.round(surprisePercent)}%`;
+
+            // Update AI response based on dominant emotion
+            const emotions_map = {
+                joy: "You seem really happy! Your positive energy is wonderful to see. Keep embracing those joyful moments!",
+                anger: "I notice signs of frustration. Taking a few deep breaths might help. Remember, it's okay to step back and regroup when needed.",
+                sorrow: "You appear to be feeling down. Remember that it's okay to experience all emotions, and reaching out to someone you trust might help.",
+                surprise: "Wow, you look surprised! Sometimes unexpected moments lead to new discoveries. What caught you off guard?"
+            };
+
+            // Find dominant emotion
+            let dominant = "joy";
+            let max = emotion.joy;
+
+            if (emotion.sorrow > max) {
+                dominant = "sorrow";
+                max = emotion.sorrow;
+            }
+            if (emotion.anger > max) {
+                dominant = "anger";
+                max = emotion.anger;
+            }
+            if (emotion.surprise > max) {
+                dominant = "surprise";
+                max = emotion.surprise;
+            }
+
+            document.getElementById('ai-response').textContent = emotions_map[dominant];
+        }
+
+        // Update voice emotion UI
+        function updateVoiceEmotionUI(emotions) {
+            const emotionBars = document.querySelectorAll('.audio-analysis .emotion-results .progress-bar');
+            const percentages = document.querySelectorAll('.audio-analysis .emotion-results .percentage');
+
+            const joyPercent = (emotions.joy / 5) * 100;
+            const sorrowPercent = (emotions.sorrow / 5) * 100;
+            const angerPercent = (emotions.anger / 5) * 100;
+            const surprisePercent = (emotions.surprise / 5) * 100;
+
+            emotionBars[0].style.width = `${joyPercent}%`;
+            emotionBars[1].style.width = `${sorrowPercent}%`;
+            emotionBars[2].style.width = `${angerPercent}%`;
+            emotionBars[3].style.width = `${surprisePercent}%`;
+
+            percentages[0].textContent = `${Math.round(joyPercent)}%`;
+            percentages[1].textContent = `${Math.round(sorrowPercent)}%`;
+            percentages[2].textContent = `${Math.round(sorrowPercent)}%`;
+            percentages[3].textContent = `${Math.round(surprisePercent)}%`;
+        }
+
+        // Update AI response when received from backend
+        function updateAIResponse(response) {
+            document.getElementById('ai-response').textContent = response;
+        }
+
+        // Initialize event listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize WebSocket connection
+            initializeSocketConnection();
+
+            // Camera handling
+            const startCameraBtn = document.querySelector('.start-camera');
+            startCameraBtn.addEventListener('click', startVideoAnalysis);
+
+            // Voice analysis
+            const startVoiceBtn = document.getElementById('start-voice');
+            startVoiceBtn.addEventListener('click', startVoiceAnalysis);
+
+            // Start combined analysis
+            const startAnalysisBtn = document.querySelector('.start-analysis');
+            startAnalysisBtn.addEventListener('click', () => {
+                startVideoAnalysis();
+                startVoiceAnalysis();
+            });
+
+            // Fallback animation for demo purposes
+            let demoMode = true;  // Set to false when connected to real backend
+
+            if (demoMode) {
+                // Sample emotions for demo
+                const emotions = [
+                    { joy: 0.75, sorrow: 0.05, anger: 0.05, surprise: 0.15 },
+                    { joy: 0.20, sorrow: 0.10, anger: 0.60, surprise: 0.10 },
+                    { joy: 0.30, sorrow: 0.50, anger: 0.10, surprise: 0.10 },
+                    { joy: 0.10, sorrow: 0.05, anger: 0.05, surprise: 0.80 }
+                ];
+
+                // Simulate emotion updates for demo
+                setInterval(() => {
+                    if (!socket || socket.readyState !== WebSocket.OPEN) {
+                        const randomIndex = Math.floor(Math.random() * emotions.length);
+                        updateEmotionUI([{
+                            joy: emotions[randomIndex].joy * 5,
+                            sorrow: emotions[randomIndex].sorrow * 5,
+                            anger: emotions[randomIndex].anger * 5,
+                            surprise: emotions[randomIndex].surprise * 5
+                        }]);
+                    }
+                }, 5000);
+            }
+        });
+    </script>
+</body>
+</html>
