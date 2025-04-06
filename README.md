@@ -1,4 +1,4 @@
-# Emotion Analyser Bot
+# SensEye
 
 This project is an emotion analyser bot using Gemini and Google Vision APIs with live camera feed and voice emotion analysis.
 
@@ -6,7 +6,7 @@ This project is an emotion analyser bot using Gemini and Google Vision APIs with
 
 1. Clone the repository:
    ```sh
-   git clone https://github.com/kavinraj-95/emotion-analyser-bot.git
+   git clone https://github.com/kavinraj-95/senseye.git
    cd emotion-analyser-bot
    ```
 
