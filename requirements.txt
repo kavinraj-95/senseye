@@ -1,0 +1,8 @@
+google-cloud-vision
+requests
+opencv-python
+speechrecognition
+librosa
+numpy
+scikit-learn
+soundfile
